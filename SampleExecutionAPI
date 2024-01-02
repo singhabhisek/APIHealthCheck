@@ -1,0 +1,94 @@
+# from flask import Flask, jsonify, request
+# from xml.etree import ElementTree as ET
+#
+# app = Flask(__name__)
+#
+# # Sample data to simulate a database
+# data = []
+#
+# @app.route('/api/data', methods=['GET'])
+# def get_data():
+#     return jsonify({'data': data})
+#
+# @app.route('/api/data', methods=['POST'])
+# def add_data():
+#     new_data = request.get_json()
+#
+#     if not new_data or 'name' not in new_data:
+#         return jsonify({'error': 'Invalid payload'}), 400
+#
+#     data.append(new_data)
+#     return jsonify({'message': 'Data added successfully'}), 201
+#
+#
+# @app.route('/api/xmldata', methods=['POST'])
+# def add_xml_data():
+#     try:
+#         xml_data = ET.fromstring(request.data)
+#         new_data = {
+#             'tag1': xml_data.find('tag1').text,
+#             'tag2': xml_data.find('tag2').text,
+#             'tag3': xml_data.find('tag3').text,
+#         }
+#
+#         data.append(new_data)
+#         return jsonify({'message': 'Data added successfully', 'data': new_data}), 201
+#     except Exception as e:
+#         return jsonify({'error': f'Invalid XML payload: {str(e)}'}), 400
+#
+#
+# if __name__ == '__main__':
+#     app.run(debug=True, port=8080)  # Change the port number to the desired port
+
+
+
+from flask import Flask, jsonify, request
+from xml.etree import ElementTree as ET
+import random
+
+app = Flask(__name__)
+
+# Sample data to simulate a database
+data = []
+
+@app.route('/api/data', methods=['GET'])
+def get_data():
+    return jsonify({'data': data})
+
+
+@app.route('/api/data', methods=['POST'])
+def add_data():
+    new_data = request.get_json()
+
+    if not new_data or 'name' not in new_data:
+        return jsonify({'error': 'Invalid payload'}), 400
+
+    if random.choice([True, False]):
+        return jsonify({'error': 'Intermittent error: Invalid JSON payload'}), 400
+    else:
+        data.append(new_data)
+        return jsonify({'message': 'Data added successfully'}), 201
+
+
+@app.route('/api/xmldata', methods=['POST'])
+def add_xml_data():
+    try:
+        xml_data = ET.fromstring(request.data)
+        new_data = {
+            'tag1': xml_data.find('tag1').text,
+            'tag2': xml_data.find('tag2').text,
+            'tag3': xml_data.find('tag3').text,
+        }
+
+        # Introduce randomness to the error response
+        if random.choice([True, False]):
+            return jsonify({'error': 'Intermittent error: Invalid XML payload'}), 400
+        else:
+            data.append(new_data)
+            return jsonify({'message': 'Data added successfully', 'data': new_data}), 201
+    except Exception as e:
+        return jsonify({'error': f'Invalid XML payload: {str(e)}'}), 400
+
+
+if __name__ == '__main__':
+    app.run(debug=True, port=8080)  # Change the port number to the desired port
