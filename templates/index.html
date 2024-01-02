@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<!--    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>-->
+ <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='datatables/js/jquery-3.6.4.min.js') }}"></script>
+
+     <!-- Include local DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='datatables/css/dataTables.css') }}">
+
+    <!-- Include local DataTables JavaScript -->
+    <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='datatables/js/jquery.dataTables.js') }}"></script>
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Execution</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='datatables/css/bootstrap.min.css') }}">
+<!--    &lt;!&ndash; Font Awesome CSS &ndash;&gt;-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
+
+    <style>
+    body {
+      display: flex;
+<!--      align-items: center;-->
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+
+     #centeredContent {
+      text-align: center;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100px; /* Adjust the height if needed */
+      width: 100px; /* Adjust the height if needed */
+      position: fixed;
+      top: 300px;
+      left: 50%;
+      right: 0;
+      bottom: 0;
+      background-color: lightblue; /* Add a semi-transparent background */
+      z-index: 999; /* Set a high z-index to ensure it's above other elements */
+      display:none;
+}
+    </style>
+
+    <style>
+    .modal-body-scroll {
+        max-height: calc(100vh - 200px); /* Adjust the value based on your design */
+        overflow-y: auto;
+        overflow-x: auto;
+    }
+</style>
+
+    <script>
+  $(document).ready( function () {
+    $('#serviceTable').DataTable();
+  });
+</script>
+
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Service Execution</h1>
+        <b><label id="executionSummary">Services Executed: 0, Failed: 0</label></b>
+        <hr/>
+        <br/>
+        <div class="form-group">
+                <label for="iterationCounter">Iteration Counter:</label>
+                <input type="number" class="form-control" id="iterationCounter" value="1" min="1" placeholder="Enter number of executions">
+            </div>
+            <div class="form-group">
+
+                <button type="button" class="btn btn-primary" onclick="submitForm()">Submit</button>
+
+                <button class="btn btn-primary ml-2" type="button" onclick="selectAllServices()">Select All</button>
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset</button>
+            </div>
+        <hr/>
+        <br/>
+
+        <form id="executionForm">
+            <table id="serviceTable" class="table" style="width:100%">
+                <thead>
+                    <tr>
+                        <th scope="col">Select All</th>
+                        <th scope="col">Service Name</th>
+                        <th scope="col">Operation Name</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Description</th>
+                        <th scope="col" style="display:None">DATA</th>
+
+                        <th scope="col" style="display:None;text-align:right;">Details</th>
+                    </tr>
+                </thead>
+                <tbody id="serviceTableBody">
+                    <!-- Table rows will be populated dynamically -->
+                </tbody>
+            </table>
+
+        </form>
+    </div>
+
+    <!-- Add this element to your HTML -->
+<div id="centeredContent" >
+  <!-- Use your preferred spinner or loading animation here -->
+  <i class="fas fa-spinner fa-spin"></i> Loading...
+</div>
+
+    <!-- Bootstrap JS-->
+    <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='datatables/js/bootstrap.min.js') }}"></script>
+
+    <script>
+    let results;
+    let totalServicesExecuted = 0;
+    let failedServicesCount = 0;
+
+    function showWaitingWheel() {
+      // Show the waiting wheel
+      document.getElementById('centeredContent').style.display = 'block';
+    }
+
+    function hideWaitingWheel() {
+      // Hide the waiting wheel
+      document.getElementById('centeredContent').style.display = 'none';
+    }
+    function populateTable(services) {
+        console.log('Populating table with services:', services);
+        const tableBody = document.getElementById('serviceTableBody');
+        tableBody.innerHTML = '';
+
+
+        services.forEach(service => {
+            const serviceName = service.serviceName;
+
+            service.operations.forEach(operation => {
+                const row = document.createElement('tr');
+                const checkboxCell = document.createElement('td');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = `${serviceName}:${operation.operationName}`;
+                checkboxCell.appendChild(checkbox);
+                row.appendChild(checkboxCell);
+
+                row.innerHTML += `<td>${serviceName}</td>`;
+                row.innerHTML += `<td>${operation.operationName}</td>`;
+
+                row.innerHTML += '<td><i class="fas fa-question"></i></td>';  // Status column (to be filled later)
+                row.innerHTML += `<td>${operation.useCase}</td>`;
+                row.innerHTML += `<td style="display: None;"></td>`;
+
+
+                row.innerHTML += '<td><button type="button" class="btn btn-info" onclick="showDetails(this)">Details</button></td>';
+                tableBody.appendChild(row);
+            });
+        });
+        console.log('Table populated successfully.');
+    }
+
+    // Call the populateTable function with data from app.py
+    const servicesData = {{ services | tojson | safe }};
+    populateTable(servicesData);
+
+    // Function to submit the form and execute selected services
+    function submitForm() {
+
+
+        const selectedServices = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(checkbox => checkbox.value);
+        const iterationCounter = document.getElementById('iterationCounter').value;
+
+        if (selectedServices.length === 0) {
+            alert('Please select at least one service.');
+            return;
+        }
+        showWaitingWheel();
+        // Perform AJAX request to execute services
+        fetch('/execute', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                selectedServices: selectedServices,
+                iterationCounter: iterationCounter,
+            }),
+        })
+        .then(response => response.json())
+        .then(results => {
+            // Handle the results (update status icons, show alert, etc.)
+            console.log(results);
+
+            // Assign the results globally
+            results = results;
+            updateTableStatus(results);
+
+            alert('Execution complete!');
+        })
+        .catch(error => console.error('Error:', error))
+        .finally(() => hideWaitingWheel());
+
+    }
+
+    // Function to reset the form
+    function resetForm() {
+        document.getElementById('executionForm').reset();
+        resetTableDetails();
+    }
+
+     // Function to select all services in the table
+        function selectAllServices() {
+            const checkboxes = document.querySelectorAll('#serviceTableBody input[type="checkbox"]');
+            checkboxes.forEach(checkbox => (checkbox.checked = true));
+        }
+
+
+    // Function to update the table with execution results
+     function updateTableStatus(results) {
+<!--        results = results;-->
+         totalServicesExecuted = 0;
+ failedServicesCount = 0;
+        resetTableDetails();
+
+        results.forEach(result => {
+            const serviceSelector = `input[value="${result.serviceName}"]`;
+            const statusCell = document.querySelector(serviceSelector).parentNode.nextElementSibling.nextElementSibling.nextElementSibling;  // Updated indexing
+            const overallStatusCell = document.querySelector(serviceSelector).parentNode.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling;
+
+<!--            console.log('Service Selector:', serviceSelector);-->
+<!--            console.log('Status Cell:', statusCell);-->
+<!--            console.log('Overall Status Cell:', overallStatusCell);-->
+
+            passedIterations = result.overallStatus.split(' - ')[0];
+            console.log(passedIterations);
+            if (result.overallStatus.includes('GREEN')) {
+                console.log('Setting status to GREEN');
+
+                statusCell.innerHTML = `${passedIterations} <i class="fas fa-check-circle text-success"></i>`;
+
+            } else if (result.overallStatus.includes('AMBER')) {
+                console.log('Setting status to AMBER');
+                statusCell.innerHTML = `${passedIterations} <i class="fas fa-exclamation-triangle text-warning"></i>`;
+             } else if (result.overallStatus.includes('RED')) {
+            console.log('Setting status to RED');
+            statusCell.innerHTML = `${passedIterations} <i class="fas fa-times-circle text-danger"></i>`;
+            // Increment failed services count
+            failedServicesCount++;
+        }
+
+            const row = statusCell.closest('tr');
+
+            const hiddenColumnIndex = 5; // Adjust this index based on your table structure
+            row.cells[hiddenColumnIndex].innerHTML = "";
+
+            row.cells[hiddenColumnIndex].innerHTML += `${JSON.stringify(result)}`;  // Hidden column for response
+            row.cells[hiddenColumnIndex].style.display = 'none';
+            console.log('Setting overall status:', result.iterations[0].status);
+<!--            overallStatusCell.innerHTML = result.iterations[0].description;-->
+
+            // Increment total services executed count
+            totalServicesExecuted++;
+        });
+
+        // Update the label with the counts
+    const executionSummaryLabel = document.getElementById('executionSummary');
+    executionSummaryLabel.textContent = `Services Executed: ${totalServicesExecuted}, Failed: ${failedServicesCount}`;
+
+    }
+
+    // Function to reset the previous table details for status, description, details, etc.
+        function resetTableDetails() {
+            const tableRows = document.querySelectorAll('#serviceTableBody tr');
+
+            tableRows.forEach(row => {
+                // Assuming your columns for status, description, details, etc., start from the 3rd column (index 2)
+                for (let i = 3; i < row.cells.length-1; i++) {
+                    if (i!=4){
+                    row.cells[i].innerHTML = ''; // Reset the content
+                    }
+                }
+            });
+        }
+    // Function to get the appropriate icon based on overall status
+    function getStatusIcon(overallStatus) {
+        switch (overallStatus) {
+            case 'GREEN':
+                return 'check-circle text-success';
+            case 'AMBER':
+                return 'exclamation-circle text-warning';
+            case 'RED':
+                return 'times-circle text-danger';
+            default:
+                return 'question-circle text-secondary';
+        }
+    }
+
+    // Function to show details in the modal
+    function showDetails(button, hiddenColumnIndex) {
+    const row = button.closest('tr');
+    const serviceName = row.cells[0].innerHTML;
+    const operationName = row.cells[1].innerHTML;
+
+    // Access the hidden column to retrieve the response information
+    hiddenColumnIndex = 5;
+    const hiddenColumnValue = row.cells[hiddenColumnIndex].textContent; // Use textContent instead of innerHTML
+
+    // Check if hiddenColumnValue is not empty
+    if (hiddenColumnValue.trim() === '') {
+        console.error('No JSON body result available.');
+        return;
+    }
+
+    const responseInfo = JSON.parse(hiddenColumnValue);
+
+
+    // Check if responseInfo has iterations and overallStatus
+    if (responseInfo.iterations && responseInfo.overallStatus) {
+        const iterations = responseInfo.iterations;
+
+        // Create a collapsible format for iterations
+        let iterationsHtml = '';
+        iterations.forEach((iteration, index) => {
+            iterationsHtml += `
+                <div class="card">
+                    <div class="card-header" id="heading${index + 1}">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse${index + 1}" aria-expanded="true" aria-controls="collapse${index + 1}">
+                                Iteration #${index + 1} - ${iteration.status}
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapse${index + 1}" class="collapse" aria-labelledby="heading${index + 1}" data-parent="#detailsAccordion">
+                        <div class="card-body">
+                            Message: ${iteration.responseText}
+                        </div>
+                    </div>
+                </div>`;
+        });
+
+        // Update the modal content with the generated HTML
+        $('#detailsModal').find('.modal-title').text(`Details for ${operationName}`);
+        $('#detailsModal').find('.modal-body').html(`
+            <div id="detailsAccordion">
+                ${iterationsHtml}
+            </div>
+        `);
+
+        // Show the modal
+        $('#detailsModal').modal('show');
+    } else {
+        console.error('Invalid responseInfo:', responseInfo);
+    }
+}
+
+
+</script>
+
+    <!-- Bootstrap Modal for Details -->
+    <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailsModalLabel"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body modal-body-scroll">
+                    <!-- Apply max-height and overflow to the modal-body -->
+                    <div style="max-height: 400px; overflow-y: auto; overflow-x: auto;">
+                        <!-- Collapsible content will be added dynamically -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

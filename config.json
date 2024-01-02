@@ -1,0 +1,54 @@
+{
+  "webServices": [
+    {
+      "serviceName": "LocalAPIGET",
+      "operations": [
+        {
+          "operationName": "ValidateUser",
+          "useCase": "Description of Use Case for ValidateUser",
+          "successCriteria": "New",
+          "endpoint": "http://127.0.0.1:8080/api/data",
+          "sampleRequestLocation": "",
+          "additionalHeaders": {
+            "clientId": "",
+            "secret": "",
+            "Header1": "",
+            "Header2": ""
+          }
+        }
+      ]
+    },
+    {
+      "serviceName": "POSTCALL",
+      "operations": [
+        {
+          "operationName": "LocalAPIPOST",
+          "useCase": "Description of Use Case for OperationA",
+          "successCriteria": "Data",
+          "endpoint": "http://127.0.0.1:8080/api/data",
+          "sampleRequestLocation": "payloads/1.json",
+          "clientId": "client_id_service2",
+          "secret": "secret_key_service2",
+          "additionalHeaders": {
+            "Header5": "Value5",
+            "Header6": "Value6"
+          }
+        },
+        {
+          "operationName": "LocalAPIPOSTXML",
+          "useCase": "Description of Use Case for OperationA",
+          "successCriteria": "Data",
+          "endpoint": "http://127.0.0.1:8080/api/xmldata",
+          "sampleRequestLocation": "payloads/2.xml",
+          "clientId": "client_id_service2",
+          "secret": "secret_key_service2",
+          "additionalHeaders": {
+            "Header5": "Value5",
+            "Header6": "Value6"
+          }
+        }
+
+      ]
+    }
+  ]
+}
