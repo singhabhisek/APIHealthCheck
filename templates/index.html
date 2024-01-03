@@ -60,6 +60,181 @@
     }
 </style>
 
+<!--    <script>-->
+<!--    function exportToCSV() {-->
+<!--        const table = document.getElementById('serviceTable');-->
+<!--        const rows = table.getElementsByTagName('tr');-->
+<!--        const csvData = [];-->
+
+<!--        // Iterate through rows and cells to collect data-->
+<!--        for (let i = 0; i < rows.length; i++) {-->
+<!--            const row = rows[i];-->
+<!--            const rowData = [];-->
+
+<!--            for (let j = 0; j < row.cells.length; j++) {-->
+<!--                const cell = row.cells[j];-->
+<!--                const cellText = cell.innerText.replace(/"/g, '""'); // Escape double quotes-->
+<!--                rowData.push(`"${cellText}"`);-->
+<!--            }-->
+
+<!--            csvData.push(rowData.join(','));-->
+<!--        }-->
+
+<!--        // Create a Blob with the data-->
+<!--        const csvContent = csvData.join('\n');-->
+<!--        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });-->
+
+<!--        // Create a download link and trigger the download-->
+<!--        const link = document.createElement('a');-->
+<!--        link.href = URL.createObjectURL(blob);-->
+<!--        link.download = 'service_details.csv';-->
+<!--        link.click();-->
+<!--    }-->
+<!--</script>-->
+
+
+<!--    <script>-->
+<!--    function exportToCSV() {-->
+<!--        const csvContent = generateCSVContent();-->
+<!--        downloadCSV(csvContent, 'service_results.csv');-->
+<!--    }-->
+
+<!--    function generateCSVContent() {-->
+<!--        // Get the table rows-->
+<!--        const tableRows = document.querySelectorAll('#serviceTableBody tr');-->
+
+<!--        // Initialize CSV content with header-->
+<!--        let csvContent = 'Service Name,Operation Name,Status,Description\n';-->
+
+<!--        // Iterate over table rows-->
+<!--        tableRows.forEach(row => {-->
+<!--            // Extract data from each row-->
+<!--            const serviceName = row.cells[1].innerHTML;-->
+<!--            const operationName = row.cells[2].innerHTML;-->
+<!--            const status = row.cells[3].innerText; // Use innerText to get the text without HTML tags-->
+<!--            const description = row.cells[4].innerHTML;-->
+<!--            const details = escapeCSVValue(row.cells[5].innerHTML);-->
+
+
+<!--            // Append data to CSV content-->
+<!--            csvContent += `"${serviceName}","${operationName}","${status}","${description}","${details}"\n`;-->
+<!--        });-->
+
+<!--        return csvContent;-->
+<!--    }-->
+
+<!--    function escapeCSVValue(value) {-->
+<!--        // If the value contains a comma, wrap it in double quotes and escape existing double quotes-->
+<!--        if (value.includes(',')) {-->
+<!--            value = `"${value.replace(/"/g, '""')}"`;-->
+<!--        }-->
+
+<!--        // Remove newline characters-->
+<!--&lt;!&ndash;        value = value.replace(/\n/g, ' ');&ndash;&gt;-->
+<!--        value = value.replace(/\\n/g, ' ');-->
+<!--&lt;!&ndash;        value = value.replace(/n/g, ' ');&ndash;&gt;-->
+<!--        return value;-->
+<!--    }-->
+
+<!--    function downloadCSV(content, filename) {-->
+<!--        const blob = new Blob([content], { type: 'text/csv' });-->
+<!--        const link = document.createElement('a');-->
+<!--        link.href = window.URL.createObjectURL(blob);-->
+<!--        link.download = filename;-->
+<!--        link.click();-->
+<!--    }-->
+<!--</script>-->
+
+    <script>
+    function exportToCSV() {
+        const table = document.getElementById('serviceTable');
+        const rows = table.getElementsByTagName('tr');
+        const data = [];
+
+        // Iterate through rows and cells to collect data
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            const rowData = [];
+
+            for (let j = 0; j < row.cells.length; j++) {
+                const cell = row.cells[j];
+                rowData.push(escapeCSVValue(cell.innerText));
+            }
+
+            data.push(rowData.join('\t')); // Use tab character as a delimiter
+        }
+
+        // Create a Blob with the data
+        const blob = new Blob([data.join('\n')], { type: 'application/vnd.ms-excel;charset=utf-8' });
+
+        // Create a download link and trigger the download
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'service_details.xls';
+        link.click();
+    }
+
+        function escapeCSVValue(value) {
+        // Add a single quotation mark at the beginning to ensure Excel treats it as text
+        //value = "'" + value;
+        // If the value contains a comma, wrap it in double quotes and escape existing double quotes
+        if (value.includes(',')) {
+            value = `"${value.replace(/"/g, '""')}"`;
+        }
+
+        // Remove newline characters
+        value = value.replace(/\\n/g, ' ');
+        return value;
+    }
+</script>
+
+
+<!--    <script>-->
+<!--    function exportToCSV() {-->
+<!--        // Get the table element-->
+<!--        const table = document.getElementById('serviceTable');-->
+
+<!--        // Create a CSV header-->
+<!--        let csvContent = 'data:text/csv;charset=utf-8,';-->
+
+<!--        // Add column headers to CSV-->
+<!--        const columnHeaders = [];-->
+<!--        for (const th of table.querySelectorAll('thead th')) {-->
+<!--            columnHeaders.push(escapeCSVValue(th.textContent));-->
+<!--        }-->
+<!--        csvContent += columnHeaders.join(',') + '\n';-->
+
+<!--        // Add rows to CSV-->
+<!--        table.querySelectorAll('tbody tr').forEach(row => {-->
+<!--            const rowData = [];-->
+<!--            row.querySelectorAll('td').forEach(cell => {-->
+<!--                rowData.push(escapeCSVValue(cell.textContent));-->
+<!--            });-->
+<!--            csvContent += rowData.join(',') + '\n';-->
+<!--        });-->
+
+<!--        // Create a data URI and trigger a download-->
+<!--        const encodedUri = encodeURI(csvContent);-->
+<!--        const link = document.createElement('a');-->
+<!--        link.setAttribute('href', encodedUri);-->
+<!--        link.setAttribute('download', 'service_details.csv');-->
+<!--        document.body.appendChild(link);-->
+<!--        link.click();-->
+<!--    }-->
+
+<!--    function escapeCSVValue(value) {-->
+<!--        // If the value contains a comma, wrap it in double quotes and escape existing double quotes-->
+<!--        if (value.includes(',')) {-->
+<!--            return `"${value.replace(/"/g, '""')}"`;-->
+<!--        }-->
+
+<!--        // Remove newline characters-->
+<!--        value = value.replace(/\\n/g, ' ');-->
+<!--       // alert(value);-->
+<!--        return value;-->
+<!--    }-->
+<!--</script>-->
+
     <script>
   $(document).ready( function () {
     $('#serviceTable').DataTable();
@@ -86,6 +261,8 @@
             </div>
         <hr/>
         <br/>
+
+        <button type="button" class="btn btn-success" onclick="exportToCSV()">Export to CSV</button>
 
         <form id="executionForm">
             <table id="serviceTable" class="table" style="width:100%">
@@ -133,7 +310,7 @@
       document.getElementById('centeredContent').style.display = 'none';
     }
     function populateTable(services) {
-        console.log('Populating table with services:', services);
+<!--        console.log('Populating table with services:', services);-->
         const tableBody = document.getElementById('serviceTableBody');
         tableBody.innerHTML = '';
 
@@ -195,7 +372,7 @@
         .then(response => response.json())
         .then(results => {
             // Handle the results (update status icons, show alert, etc.)
-            console.log(results);
+<!--            console.log(results);-->
 
             // Assign the results globally
             results = results;
@@ -238,17 +415,17 @@
 <!--            console.log('Overall Status Cell:', overallStatusCell);-->
 
             passedIterations = result.overallStatus.split(' - ')[0];
-            console.log(passedIterations);
+<!--            console.log(passedIterations);-->
             if (result.overallStatus.includes('GREEN')) {
-                console.log('Setting status to GREEN');
+<!--                console.log('Setting status to GREEN');-->
 
                 statusCell.innerHTML = `${passedIterations} <i class="fas fa-check-circle text-success"></i>`;
 
             } else if (result.overallStatus.includes('AMBER')) {
-                console.log('Setting status to AMBER');
+<!--                console.log('Setting status to AMBER');-->
                 statusCell.innerHTML = `${passedIterations} <i class="fas fa-exclamation-triangle text-warning"></i>`;
              } else if (result.overallStatus.includes('RED')) {
-            console.log('Setting status to RED');
+<!--            console.log('Setting status to RED');-->
             statusCell.innerHTML = `${passedIterations} <i class="fas fa-times-circle text-danger"></i>`;
             // Increment failed services count
             failedServicesCount++;
@@ -259,9 +436,10 @@
             const hiddenColumnIndex = 5; // Adjust this index based on your table structure
             row.cells[hiddenColumnIndex].innerHTML = "";
 
-            row.cells[hiddenColumnIndex].innerHTML += `${JSON.stringify(result)}`;  // Hidden column for response
-            row.cells[hiddenColumnIndex].style.display = 'none';
-            console.log('Setting overall status:', result.iterations[0].status);
+            row.cells[hiddenColumnIndex].textContent +=  `${JSON.stringify(result)}`;  // Hidden column for response
+
+            row.cells[hiddenColumnIndex].style.display = 'block';
+<!--            console.log('Setting overall status:', result.iterations[0].status);-->
 <!--            overallStatusCell.innerHTML = result.iterations[0].description;-->
 
             // Increment total services executed count
@@ -301,8 +479,70 @@
         }
     }
 
-    // Function to show details in the modal
-    function showDetails(button, hiddenColumnIndex) {
+<!--    // Function to show details in the modal-->
+<!--    function showDetails(button, hiddenColumnIndex) {-->
+<!--    const row = button.closest('tr');-->
+<!--    const serviceName = row.cells[0].innerHTML;-->
+<!--    const operationName = row.cells[1].innerHTML;-->
+
+<!--    // Access the hidden column to retrieve the response information-->
+<!--    hiddenColumnIndex = 5;-->
+<!--    const hiddenColumnValue = row.cells[hiddenColumnIndex].textContent; // Use textContent instead of innerHTML-->
+
+<!--    // Check if hiddenColumnValue is not empty-->
+<!--    if (hiddenColumnValue.trim() === '') {-->
+<!--        console.error('No JSON body result available.');-->
+<!--        return;-->
+<!--    }-->
+
+
+<!--    const responseInfo = JSON.parse(hiddenColumnValue);-->
+
+
+<!--    // Check if responseInfo has iterations and overallStatus-->
+<!--    if (responseInfo.iterations && responseInfo.overallStatus) {-->
+<!--        const iterations = responseInfo.iterations;-->
+
+<!--        // Create a collapsible format for iterations-->
+<!--        let iterationsHtml = '';-->
+<!--        iterations.forEach((iteration, index) => {-->
+<!--            iterationsHtml += `-->
+<!--                <div class="card">-->
+<!--                    <div class="card-header" id="heading${index + 1}">-->
+<!--                        <h5 class="mb-0">-->
+<!--                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse${index + 1}" aria-expanded="true" aria-controls="collapse${index + 1}">-->
+<!--                                Iteration #${index + 1} - ${iteration.status}-->
+<!--                            </button>-->
+<!--                        </h5>-->
+<!--                    </div>-->
+<!--                    <div id="collapse${index + 1}" class="collapse" aria-labelledby="heading${index + 1}" data-parent="#detailsAccordion">-->
+<!--                        <div class="card-body">-->
+<!--                            Message: ${hiddenColumnValue}-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>`;-->
+<!--        });-->
+
+<!--        // Update the modal content with the generated HTML-->
+<!--        $('#detailsModal').find('.modal-title').text(`Details for ${operationName}`);-->
+<!--        $('#detailsModal').find('.modal-body').html(`-->
+<!--            <div id="detailsAccordion">-->
+<!--                ${iterationsHtml}-->
+<!--            </div>-->
+<!--        `);-->
+
+<!--        // Show the modal-->
+<!--        $('#detailsModal').modal('show');-->
+<!--    } else {-->
+<!--        console.error('Invalid responseInfo:', responseInfo);-->
+<!--    }-->
+<!--}-->
+
+
+// Function to show details in the modal
+// Function to show details in the modal
+// Function to show details in the modal
+function showDetails(button, hiddenColumnIndex) {
     const row = button.closest('tr');
     const serviceName = row.cells[0].innerHTML;
     const operationName = row.cells[1].innerHTML;
@@ -313,50 +553,73 @@
 
     // Check if hiddenColumnValue is not empty
     if (hiddenColumnValue.trim() === '') {
-        console.error('No JSON body result available.');
+        console.error('No response information available.');
         return;
     }
 
-    const responseInfo = JSON.parse(hiddenColumnValue);
+    let responseInfo;
+    try {
+        responseInfo = JSON.parse(hiddenColumnValue);
 
+        if (typeof responseInfo === 'object' && Array.isArray(responseInfo.iterations)) {
+            // JSON response with iterations
+            const iterations = responseInfo.iterations;
 
-    // Check if responseInfo has iterations and overallStatus
-    if (responseInfo.iterations && responseInfo.overallStatus) {
-        const iterations = responseInfo.iterations;
-
-        // Create a collapsible format for iterations
-        let iterationsHtml = '';
-        iterations.forEach((iteration, index) => {
-            iterationsHtml += `
-                <div class="card">
-                    <div class="card-header" id="heading${index + 1}">
-                        <h5 class="mb-0">
-                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse${index + 1}" aria-expanded="true" aria-controls="collapse${index + 1}">
-                                Iteration #${index + 1} - ${iteration.status}
-                            </button>
-                        </h5>
-                    </div>
-                    <div id="collapse${index + 1}" class="collapse" aria-labelledby="heading${index + 1}" data-parent="#detailsAccordion">
-                        <div class="card-body">
-                            Message: ${iteration.responseText}
+            // Create a collapsible format for iterations
+            let iterationsHtml = '';
+            iterations.forEach((iteration, index) => {
+            responseValue = escapeHTML(responseInfo.iterations[index].responseText);
+                iterationsHtml += `
+                    <div class="card">
+                        <div class="card-header" id="heading${index + 1}">
+                            <h5 class="mb-0">
+                                <button class="btn btn-link" data-toggle="collapse" data-target="#collapse${index + 1}" aria-expanded="true" aria-controls="collapse${index + 1}">
+                                    Iteration #${index + 1} - ${iteration.status}
+                                </button>
+                            </h5>
                         </div>
-                    </div>
-                </div>`;
-        });
+                        <div id="collapse${index + 1}" class="collapse" aria-labelledby="heading${index + 1}" data-parent="#detailsAccordion">
+                            <div class="card-body">
+                               Message: ${responseValue} <!-- ${iteration.responseText}-->
+                            </div>
+                        </div>
+                    </div>`;
+            });
 
-        // Update the modal content with the generated HTML
-        $('#detailsModal').find('.modal-title').text(`Details for ${operationName}`);
-        $('#detailsModal').find('.modal-body').html(`
-            <div id="detailsAccordion">
-                ${iterationsHtml}
-            </div>
-        `);
+            // Update the modal content with the generated HTML
+            $('#detailsModal').find('.modal-title').text(`Details for ${operationName}`);
+            $('#detailsModal').find('.modal-body').html(`
+                <div id="detailsAccordion">
+                    ${iterationsHtml}
+                </div>
+            `);
 
-        // Show the modal
-        $('#detailsModal').modal('show');
-    } else {
-        console.error('Invalid responseInfo:', responseInfo);
+            // Show the modal
+            $('#detailsModal').modal('show');
+            return; // Exit the function to avoid processing the XML logic
+        }
+    } catch (error) {
+        // If parsing as JSON fails, consider it as XML
+        console.warn('Error parsing response information as JSON, treating as XML:', error);
     }
+
+    // Display XML content in a separate way
+    $('#detailsModal').find('.modal-title').text(`Details for ${operationName}`);
+    $('#detailsModal').find('.modal-body').html(`
+        <div>
+            <pre>${escapeHTML(hiddenColumnValue)}</pre>
+        </div>
+    `);
+
+    // Show the modal
+    $('#detailsModal').modal('show');
+}
+
+// Helper function to escape HTML entities
+function escapeHTML(html) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(html));
+    return div.innerHTML;
 }
 
 
